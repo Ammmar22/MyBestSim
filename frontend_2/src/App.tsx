@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import AIChat from "./components/AIChat";
+
 interface Metrics {
   total_esim: number;
   products_over_100: number;
@@ -179,6 +181,7 @@ export default function App() {
         </div>
 
       </div>
+       <AIChat />
     </div>
   );
 }
