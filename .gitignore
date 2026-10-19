@@ -1,13 +1,10 @@
-# Python
+@"
 .venv/
 __pycache__/
 *.pyc
 .env
-
-# Node
 node_modules/
-frontend/dist/
-
-# OS / editor
+dist/
 .DS_Store
 .vscode/
+"@ | Out-File -Encoding ascii .gitignore
