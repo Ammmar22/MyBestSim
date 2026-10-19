@@ -22,7 +22,7 @@ export default function App() {
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+  const API = import.meta.env.VITE_API_URL ?? 'https://mybestsim.onrender.com';
 
   useEffect(() => {
     // Appel de l'API FastAPI locale

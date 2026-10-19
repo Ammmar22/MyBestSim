@@ -7,6 +7,10 @@ from pipeline.load import load_supplier_csvs
 from pipeline.validate import validate_data
 from pipeline.metrics import compute_metrics
 
+import httpx
+from pydantic import BaseModel, Field
+from services.ai_analyst import ask_ollama
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 
 app = FastAPI(
@@ -67,3 +71,39 @@ def get_anomalies(limit: int = 50):
     # NaN is not valid JSON: convert it to None (null)
     clean = subset.astype(object).where(subset.notna(), None)
     return clean.to_dict(orient="records")
+
+
+class AIQuestion(BaseModel):
+    question: str = Field(min_length=3, max_length=500)
+
+
+@app.post("/ai/ask")
+async def ask_ai(payload: AIQuestion):
+    if load_error or cached_metrics is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Les données du catalogue sont indisponibles."
+        )
+
+    sample_anomalies = []
+
+    if anomalies_df is not None:
+        clean = anomalies_df.head(10).astype(object).where(
+            anomalies_df.head(10).notna(), None
+        )
+        sample_anomalies = clean.to_dict(orient="records")
+
+    evidence = {
+        "metrics": cached_metrics,
+        "sample_anomalies": sample_anomalies,
+    }
+
+    try:
+        answer = await ask_ollama(payload.question, evidence)
+        return {"answer": answer}
+
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=503,
+            detail="Le service Ollama est indisponible."
+        )
