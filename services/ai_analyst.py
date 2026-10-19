@@ -3,7 +3,8 @@ import os
 
 import httpx
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434").rstrip("/")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
 
 
@@ -38,10 +39,15 @@ Question :
         "stream": False,
     }
 
-    async with httpx.AsyncClient(timeout=90.0) as client:
+    headers = {}
+    if OLLAMA_API_KEY:
+        headers["X-API-Key"] = OLLAMA_API_KEY
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.post(
             f"{OLLAMA_URL}/api/chat",
             json=payload,
+            headers=headers,
         )
         response.raise_for_status()
 
